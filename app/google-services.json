@@ -1,0 +1,47 @@
+{
+  "project_info": {
+    "project_number": "234651465213",
+    "project_id": "pokeguesserapp",
+    "storage_bucket": "pokeguesserapp.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:234651465213:android:5c4ad1d3a5558295581594",
+        "android_client_info": {
+          "package_name": "com.example.pokeguesser"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "234651465213-sg0bmdqsmeo32q572b7n7db6volffoo7.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.example.pokeguesser",
+            "certificate_hash": "6e74f1adc251f1fed9741c45d4dabd42ec93361d"
+          }
+        },
+        {
+          "client_id": "234651465213-pc5dlt88db41ueibvd745o0cn3osfbrk.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBc10Dsb2tg_hE0LDPbcwGKR0Qx3KguCL0"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "234651465213-9v027pag20c3op309rd7uvb55gu9tn2o.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
