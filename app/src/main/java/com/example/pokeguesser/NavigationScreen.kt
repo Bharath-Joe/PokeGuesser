@@ -95,7 +95,7 @@ fun MainScreenNavigationConfigurations(navController: NavHostController, gso: Go
 
 @Composable
 fun GradientBackground(content: @Composable () -> Unit) {
-    val gradientColors = listOf(Color(0xFFFFFFFF), Color(0xFFFFFFFF)) // Example gradient colors
+    val gradientColors = listOf(Color(0xFFFFFFFF), Color(0xFFFFFFFF))
 
     Box(
         modifier = Modifier

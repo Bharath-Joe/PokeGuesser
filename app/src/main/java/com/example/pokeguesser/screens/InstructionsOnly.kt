@@ -51,7 +51,6 @@ fun InstructionsOnly(navController: NavHostController, gso: GoogleSignInOptions)
                         }
                     }
             } catch (e: ApiException) {
-                // Handle exception
                 Toast.makeText(context, "Authentication failed", Toast.LENGTH_SHORT).show()
             }
         }

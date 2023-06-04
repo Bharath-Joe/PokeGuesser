@@ -107,7 +107,7 @@ class GameViewModel() : ViewModel() {
 
         val availablePokemonIds = generationRanges.flatMap { it }
         if (availablePokemonIds.isEmpty()) {
-            return -1 // Return -1 if no generation is selected
+            return -1
         }
 
         return availablePokemonIds.random()
