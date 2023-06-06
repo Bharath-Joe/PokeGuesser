@@ -1,8 +1,10 @@
 package com.example.pokeguesser.screens
 
 
+import android.content.ContentValues.TAG
 import android.content.Context
 import android.content.Intent
+import android.util.Log
 import android.widget.Toast
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.border
@@ -19,7 +21,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.buildAnnotatedString
@@ -32,17 +33,30 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
+import coil.compose.rememberAsyncImagePainter
 import com.example.pokeguesser.R
 import com.example.pokeguesser.model.GameViewModel
 import com.example.pokeguesser.ui.theme.Red
 import com.google.android.gms.auth.api.signin.GoogleSignIn
 import com.google.android.gms.auth.api.signin.GoogleSignInOptions
 import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.firestore.FirebaseFirestore
 
 @Composable
 fun UserScreen(gameViewModel: GameViewModel = viewModel(), gso: GoogleSignInOptions, navController: NavHostController) {
+    val uiState by gameViewModel.uiState.collectAsState()
     val context = LocalContext.current
     val googleSignInClient = remember { GoogleSignIn.getClient(context, gso) }
+    val currentUser = FirebaseAuth.getInstance().currentUser
+    val db = FirebaseFirestore.getInstance()
+    var name = ""
+    name = if(currentUser == null){
+        "Guest"
+    }
+    else{
+        currentUser.displayName!!
+    }
+    val profilePic = currentUser?.photoUrl?.toString()
     val signOut = {
         FirebaseAuth.getInstance().signOut()
         googleSignInClient.signOut().addOnCompleteListener {
@@ -50,22 +64,57 @@ fun UserScreen(gameViewModel: GameViewModel = viewModel(), gso: GoogleSignInOpti
         }
         navController.navigate("instructions")
     }
-    val uiState by gameViewModel.uiState.collectAsState()
+    if (currentUser != null) {
+        val userDocument = db.collection("users").document(currentUser.email ?: "")
+        userDocument.get()
+            .addOnSuccessListener { documentSnapshot ->
+                if (documentSnapshot.exists()) {
+                    val highestScore = documentSnapshot.getLong("highestScore")
+                    val highestScorePokemon = documentSnapshot.getString("highestScorePokemon")
+
+                    if (highestScore != null && highestScorePokemon != null) {
+                        uiState.highestScore = highestScore
+                        uiState.highestScorePokemon = highestScorePokemon
+                    } else {
+                        Log.d(TAG, "Highest score or highest score Pokemon is null")
+                    }
+                } else {
+                    Log.d(TAG, "User document does not exist")
+                }
+            }
+            .addOnFailureListener { e ->
+                Log.w(TAG, "Error retrieving user document", e)
+            }
+    } else {
+        Log.d(TAG, "User is not authenticated")
+    }
     Column(
         modifier = Modifier.padding(32.dp),
     ) {
-        Text(
-            "Guesser Profile",
+        Text("Guesser Profile",
             fontFamily = FontFamily(Font(R.font.varela)),
             fontSize = 27.sp,
             modifier = Modifier.align(Alignment.CenterHorizontally)
         )
         Spacer(modifier = Modifier.height(16.dp))
-        UserProfilePicture(R.drawable.ash, 120.dp, modifier = Modifier
-            .size(120.dp)
-            .padding(8.dp)
-            .align(Alignment.CenterHorizontally))
-        Spacer(modifier = Modifier.height(48.dp))
+        if (profilePic != null) {
+            UserProfilePicture(profilePic, 120.dp, modifier = Modifier
+                .size(120.dp)
+                .padding(8.dp)
+                .align(Alignment.CenterHorizontally))
+        }
+        Spacer(modifier = Modifier.height(16.dp))
+        Text(
+            text = buildAnnotatedString {
+                append("Signed In As: ")
+                withStyle(style = SpanStyle(fontWeight = FontWeight.ExtraBold, fontSize = 20.sp)) {
+                    append(name)
+                }
+            },
+            fontFamily = FontFamily(Font(R.font.varela)),
+            fontSize = 16.sp
+        )
+        Spacer(modifier = Modifier.height(16.dp))
         Text(
             text = buildAnnotatedString {
                 append("Highest Score: ")
@@ -94,17 +143,19 @@ fun UserScreen(gameViewModel: GameViewModel = viewModel(), gso: GoogleSignInOpti
         Spacer(modifier = Modifier.height(16.dp))
         Divider(color = Red, thickness = 1.dp)
         Spacer(modifier = Modifier.height(32.dp))
-        ShareButton(shareContent = { context -> shareContent(context)})
-        Spacer(modifier = Modifier.height(32.dp))
-        Button(
-            onClick = { signOut() },
-            modifier = Modifier.align(Alignment.CenterHorizontally)
-        ) {
-            Text(
-                text = "Sign Out",
-                fontFamily = FontFamily(Font(R.font.varela)),
-                fontWeight = FontWeight.Bold
-            )
+        if(currentUser != null){
+            ShareButton(shareContent = { context -> shareContent(context)})
+            Spacer(modifier = Modifier.height(32.dp))
+            Button(
+                onClick = { signOut() },
+                modifier = Modifier.align(Alignment.CenterHorizontally)
+            ) {
+                Text(
+                    text = "Sign Out",
+                    fontFamily = FontFamily(Font(R.font.varela)),
+                    fontWeight = FontWeight.Bold
+                )
+            }
         }
     }
 }
@@ -152,13 +203,12 @@ fun shareContent(context: Context) {
 
 @Composable
 fun UserProfilePicture(
-    imageRes: Int,
+    profilePic: String,
     imageSize: Dp,
     modifier: Modifier = Modifier
 ) {
-    val image = painterResource(imageRes)
     Image(
-        painter = image,
+        painter = rememberAsyncImagePainter(profilePic),
         contentDescription = null,
         modifier = modifier
             .size(imageSize)

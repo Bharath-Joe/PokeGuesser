@@ -15,5 +15,6 @@ data class GameUIState(
     var score: Long = 0,
     var currentHintClickCount: Int = 0,
     var highestScore: Long = 0,
-    var highestScorePokemon: String = ""
+    var highestScorePokemon: String = "N/A",
+
 )

@@ -20,8 +20,7 @@ and the time it took for each guess.
 7. Utilize a database or API to access Pokémon sounds, assisting users in their guesses.
 8. Ability to share your profile via messages/Facebook/WhatsApp etc.
 9. Implement a difficulty option for users based on the generation of Pokemon.
+10. Storing all users playing the game as well as their highest score and Pokémon using Cloud Firestore.
 
-Deliverables NOT Met:
-1. Storing all users playing the game as well as their highest score and Pokémon, in the Firebase
-App.
+Deliverables NOT Met: NONE
 

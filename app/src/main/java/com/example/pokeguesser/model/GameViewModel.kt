@@ -1,9 +1,14 @@
 package com.example.pokeguesser.model
 
+import android.content.ContentValues.TAG
+import android.util.Log
 import androidx.compose.runtime.*
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.pokeguesser.data.PokemonApiService
+import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.firestore.FirebaseFirestore
+import com.google.firebase.firestore.SetOptions
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -18,7 +23,8 @@ class GameViewModel() : ViewModel() {
     val generationCheckboxStates: List<Boolean> get() = _generationCheckboxStates
     private val _uiState = MutableStateFlow(GameUIState())
     val uiState: StateFlow<GameUIState> = _uiState.asStateFlow()
-
+    val currentUser = FirebaseAuth.getInstance().currentUser
+    val db = FirebaseFirestore.getInstance()
     private var currentPokemonId: Int? = null
     var curPokemon = ""
 
@@ -39,8 +45,6 @@ class GameViewModel() : ViewModel() {
     }
 
     suspend fun resetGame() {
-        val currentHighestScore = _uiState.value.highestScore
-        val currentHighestScorePokemon = _uiState.value.highestScorePokemon
         currentPokemonId = pickRandomPokemonID()
         userGuess = ""
         curPokemon = getPokemonfromId(currentPokemonId!!)
@@ -56,9 +60,6 @@ class GameViewModel() : ViewModel() {
             currentPokemonMythical = getPokemonMythicalfromId(currentPokemonId!!),
             currentPokemonFront = getPokemonSpritefromId(currentPokemonId!!),
         )
-        _uiState.value.highestScore = currentHighestScore
-        _uiState.value.highestScorePokemon = currentHighestScorePokemon
-
     }
 
     fun checkUserGuess(){
@@ -68,6 +69,22 @@ class GameViewModel() : ViewModel() {
             if(_uiState.value.score > _uiState.value.highestScore){
                 _uiState.value.highestScore = _uiState.value.score
                 _uiState.value.highestScorePokemon = curPokemon
+                if (currentUser != null) {
+                    val userDocument = db.collection("users").document(currentUser.email ?: "")
+                    val userData = hashMapOf(
+                        "highestScore" to _uiState.value.highestScore,
+                        "highestScorePokemon" to _uiState.value.highestScorePokemon
+                    )
+                    userDocument.set(userData, SetOptions.merge())
+                        .addOnSuccessListener {
+                            Log.d(TAG, "User document updated or created successfully")
+                        }
+                        .addOnFailureListener { e ->
+                            Log.w(TAG, "Error updating or creating user document", e)
+                        }
+                } else {
+                    Log.d(TAG, "User is not authenticated")
+                }
             }
 
         }
