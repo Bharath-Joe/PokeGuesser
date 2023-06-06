@@ -35,6 +35,7 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
 import coil.compose.rememberAsyncImagePainter
 import com.example.pokeguesser.R
+import com.example.pokeguesser.model.GameUIState
 import com.example.pokeguesser.model.GameViewModel
 import com.example.pokeguesser.ui.theme.Red
 import com.google.android.gms.auth.api.signin.GoogleSignIn
